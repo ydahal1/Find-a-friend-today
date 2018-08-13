@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <style>
+            body{
+                background-color: #3299CC;
+            }
+            #landing-page{
+                margin-top : 140px;
+                margin-left: 80px;
+                color: white;
+                height: 500px;
+            }
+
+            #mandatory-warning, #incorrect-name, #incorrect-link{
+                color:red;
+            }
+
+            #questionnaire{
+                margin-top:55px;
+                margin-bottom: 60px;
+                margin-left: 150px;
+                color: white;
+                height: 500px;
+            }
+
+            #question-manadatory-warning{
+                color:red;
+            }
+
+            .modal-body{
+                height: 440px;
+                text-align: center;
+                overflow: auto;
+            }
+
+            #my_image{
+                height:100;
+                width:100;
+            }
+
+            #matchedImage-div{
+                height: 330px !important;
+                width:570px;
+                overflow: auto;
+            }
+
+            #match-info{
+                margin-top: 40px;
+                font-weight: 20px;
+            }
+
+        
+
+        </style>
+
+
+    </head>
+    <body>
+        <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-8 col-xs-8" id="landing-page">
+                <h1>Find a friend</h1>
+                <hr>
+                <form>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" placeholder="Your name" class="form-control" id="userName">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Link to your photo:</label>
+                        <input class="form-control" type="text" placeholder="Image link eg. facebook PP link" id="image-link">
+                    </div>
+                    <div>
+                        <p id="mandatory-warning" hidden>* All fields are Mandatory </p>
+                        <p id="incorrect-name" hidden>* Name should be 2 chars or more</p>
+                        <p id="incorrect-link" hidden>* Link should begin with http or https</p>
+                        <button class="btn btn-success" id="proceed-btn"> Proceed </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="questionnaire" hidden>
+                <div class="row">
+                    <form class="form-group" id="survery-questions"></form>
+                </div>
+                    <p id="question-manadatory-warning" hidden> * All fields are mandatory</p>
+                    <button class="btn btn-success" id="find-match-button">Submit</button>
+
+                    
+            </div>
+        </div>
+
+        <div id="result-modal" class="modal fade"  data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Your Match</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="matchedImage-div">
+                        <img id="matchedImage" src="" height="470" width="670"/>
+                    </div>
+                    <div id="match-info">
+                        <p>Name: <span id="match-name"></span></p>
+                        <p>Match Percenage: <span id="match-percentage"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="refreshPage()">Close</button>
+                </div>
+                </div>  
+            </div>
+         </div>
+            
+
+         
+         <script>
+             var name;
+             var imageLink;
+
+            // Validates user inputs name and the image url link
+         $("#proceed-btn").click(function(event) {
+            event.preventDefault();
+             name = $("#userName").val().trim(); 
+             imageLink = $("#image-link").val().trim();
+             if(name == "" || imageLink == ""){
+                 $("#mandatory-warning").show();                 
+             }else if(name.length < 2){
+                $("#incorrect-name").show(); 
+             }else if((imageLink.substr(0,4)) !='http'){
+                $("#incorrect-link").show(); $("#question-manadatory-warning").show();$("#incorrect-name").show(); $("#mandatory-warning").show(); 
+             }else{
+                $('#questionnaire').show();
+                $("#landing-page").hide();
+            }
+         });
+
+            //Array of survey questions
+            var questions=["On the scale of 1 to 5 how well do you sing?",
+                           "On the scale of 1 to 5 how much do you beleive in supreme power?",
+                           "On the scale of 1 to 5 how well do you understand soccer?",
+                           "On the scale of 1 to 5 how much do you like to travel?",
+                           "On the scale of 1 to 5 how well do you dance?",
+                           "On the scale of 1 to 5 how easily do you get agitated?",
+                           "On the scale of 1 to 5 how well do you speak a second language",
+                           "On the scale of 1 to 5 how lazy are you?",
+                           "On the scale of 1 to 5 how much do you know about space?",
+                           "On scale of 1-5 how much you beleive in existanc of life in other planet?"];
+
+            //Displayes survay questions in the screen 
+            $(document).ready(function(){
+                for(var i=0; i<questions.length; i++){
+                    var question = questions[i];
+                    var displayQuestions = $(`<div class='col-lg-5'><div class='form-group'> <label>${question}</label><select class='form-control' id='question${i}'><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" >4</option><option value="5">5</option></select></div><hr></div>`);
+                    $('#survery-questions').append(displayQuestions);
+                }
+            });
+
+            //Makes sure all fields answered TODO : find simplier way
+            $(document).on('click', '#find-match-button',function(){
+                    if($("#question0").val() == "" ||
+                       $("#question1").val() == "" ||
+                       $("#question2").val() == "" ||
+                       $("#question3").val() == "" ||
+                       $("#question4").val() == "" ||
+                       $("#question5").val() == "" ||
+                       $("#question6").val() == "" ||
+                       $("#question7").val() == "" ||
+                       $("#question8").val() == "" ||
+                       $("#question9").val() == ""){
+                       $("#question-manadatory-warning").show();
+                    }else{
+                        var choices = [];
+
+                        //Total my choices point
+                        var myChoiceTotal;
+                        for (i=0; i<questions.length; i++){
+                            var picks = $(`#question${i}`).val().trim();
+                            picks= parseInt(picks);
+                            choices.push(picks);
+                            myChoiceTotal = choices.reduce(getSum);
+                        }
+
+                        //New object to post to API
+                        var friend = {
+                            name : name,
+                            image : imageLink,
+                            choices : choices,
+                            choicesTotal:myChoiceTotal
+                        }
+
+                        //Posting new object to API
+                        $.post("/api/friends", friend, function(data, status){
+                            console.log(data);
+                        });
+
+
+                        //Getting data from API to perform logic
+                       $.get("/api/friends", function(data){
+                        //  console.log(data);  
+
+                        //Creates array of object by adding friends choices points and the difference
+                        var calcInfo = [];
+                         for (var i = 0; i < data.length-1; i++){
+                             var choicesTotal = parseInt(data[i].choicesTotal);
+                             var choiceDeviation = Math.abs(myChoiceTotal - choicesTotal);
+                            
+                            var calObj = {
+                                name : data[i].name,
+                                image : data[i].image,
+                                choiceTotal: choicesTotal,
+                                choiceDeviation : choiceDeviation
+                                }
+                             calcInfo.push(calObj);
+                            } 
+                        // console.log(calcInfo); - TEST
+                        for(var i =0; i < calcInfo.length; i++){
+                            console.log(calcInfo[i]);
+                            }
+
+                        //Function to find the index of smallest deviated pick
+                        function indexOfClosestMatch(calcInfo){
+                            var indexOfLowest = 0;
+                            var lowest = calcInfo[0].choiceDeviation;
+                            for(var i = 0; i < calcInfo.length; i++){
+                                var num = calcInfo[i].choiceDeviation;
+                                if(num < lowest){
+                                    lowest = num;
+                                    indexOfLowest = i;
+                                    }   
+                                }
+                            return indexOfLowest;
+                        }
+                          //Index of closest match
+                          var indexOfClosestMatch = indexOfClosestMatch(calcInfo);
+                        console.log(indexOfClosestMatch);
+                        $("#question-manadatory-warning").hide();
+                        var matchedImage = calcInfo[indexOfClosestMatch].image;
+                        $("#matchedImage").attr("src", matchedImage);
+                        $("#match-name").html(calcInfo[indexOfClosestMatch].name );
+                        $("#match-percentage").html(Math.abs(10 - calcInfo[indexOfClosestMatch].choiceDeviation)*10);
+                        $("#result-modal").modal("show");
+                        });          
+                    }  
+            });
+            
+            //Function to get sum of elements inside array
+            function getSum(total, num) {
+                return total + num;
+            }
+
+            //Function to refresh page when all logic is executed
+            function refreshPage(){
+                // location.reload();
+                $("#question0").val("");
+                $("#question1").val("");
+                $("#question2").val("");
+                $("#question3").val("");
+                $("#question4").val("");
+                $("#question5").val("");
+                $("#question6").val("");
+                $("#question7").val("");
+                $("#question8").val("");
+                $("#question9").val("");
+                $("#userName").val("");
+                $("#image-link").val("");
+                $("#landing-page").show();
+                $('#questionnaire').hide();
+                $("#incorrect-link").hide(); 
+                $("#question-manadatory-warning").hide();
+                $("#incorrect-name").hide();
+                 $("#mandatory-warning").hide(); 
+
+            }
+        </script>
+    </body>
+</html>
+
